@@ -13,5 +13,5 @@ urlpatterns = [
     path('tasks/<int:task_id>', views.edit_delete_task),
     path('tasks/<int:task_id>/images', views.upload_images),
     path('tasks/<int:task_id>/comments', views.create_get_comments),
-
+    path('tasks/<int:task_id>/comments/<int:comment_id>', views.create_comment_reply),
 ]

@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from tasks.models import Task, Status, TaskImage, TaskComment
+from tasks.models import Task, Status, TaskComment
 from tasks.permissions import HasEditingPermission, HasCommentingPermission
 from tasks.serializers import UserSerializer, TaskSerializer, TaskCommentSerializer
 
@@ -88,7 +88,24 @@ def create_get_comments(request, task_id: int):
 
     elif request.method == 'POST':
         serializer = TaskCommentSerializer(data=request.data)
+
         if not serializer.is_valid():
             return JsonResponse(serializer.errors, status=400)
+
         comment = serializer.save(author=request.user, task=task)
         return JsonResponse({'id': comment.id}, status=201)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, HasCommentingPermission])
+def create_comment_reply(request, task_id: int, comment_id: int):
+    task = Task.objects.get(id=task_id)
+    comment = TaskComment.objects.get(id=comment_id)
+
+    serializer = TaskCommentSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return JsonResponse(serializer.errors, status=400)
+
+    comment = serializer.save(author=request.user, task=task, reply_to_comment=comment)
+    return JsonResponse({'id': comment.id}, status=201)
