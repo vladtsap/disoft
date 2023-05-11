@@ -1,10 +1,9 @@
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 
 from tasks.models import Task, Status
-from tasks.permissions import IsTaskAuthor
+from tasks.permissions import HasEditingPermission
 from tasks.serializers import UserSerializer, TaskSerializer
 
 
@@ -44,7 +43,7 @@ def create_task(request):
 
 
 @api_view(['PUT', 'DELETE'])
-@permission_classes([IsAuthenticated, IsTaskAuthor])
+@permission_classes([IsAuthenticated, HasEditingPermission])
 def edit_delete_task(request, task_id: int):
     task = Task.objects.get(id=task_id)
 
@@ -59,19 +58,3 @@ def edit_delete_task(request, task_id: int):
     elif request.method == 'DELETE':
         task.delete()
         return JsonResponse({'message': 'task deleted'}, status=200)
-
-
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def edit_task_status(request, task_id: int):
-    task = Task.objects.get(id=task_id)
-    status = Status.objects.get(id=request.data['status'])
-
-    if (request.user == task.author) or \
-            (request.user in task.assignee.all() and status in Status.non_final_values()):
-        task.status = status
-        task.save()
-        return JsonResponse({'id': task.id}, status=200)
-
-    else:
-        raise PermissionDenied()
