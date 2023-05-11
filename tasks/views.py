@@ -2,6 +2,8 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
+from tasks.models import Task
+from tasks.permissions import IsTaskAuthor
 from tasks.serializers import UserSerializer, TaskSerializer
 
 
@@ -38,3 +40,21 @@ def create_task(request):
 
     task = serializer.save(author=user)
     return JsonResponse({'id': task.id}, status=201)
+
+
+@api_view(['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated, IsTaskAuthor])
+def edit_delete_task(request, task_id: int):
+    task = Task.objects.get(id=task_id)
+
+    if request.method == 'PUT':
+        serializer = TaskSerializer(instance=task, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return JsonResponse(serializer.errors, status=400)
+
+        task = serializer.save()
+        return JsonResponse({'id': task.id}, status=200)
+
+    elif request.method == 'DELETE':
+        task.delete()
+        return JsonResponse({'message': 'task deleted'}, status=200)
