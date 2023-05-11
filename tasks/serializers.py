@@ -23,11 +23,25 @@ class TaskSerializer(serializers.ModelSerializer):
     status = serializers.CharField(required=False)
     assignee = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
 
+    class Meta:
+        model = Task
+        fields = '__all__'
+        read_only_fields = ('author',)
+
     def create(self, validated_data):
         assignee = validated_data.pop('assignee', [])
+        status_data = validated_data.pop('status', None)
+
         task = Task.objects.create(**validated_data)
+
         for user in assignee:
             TaskAssignee.objects.create(user=user, task=task)
+
+        if status_data:
+            status = Status.objects.get(name=status_data)
+            task.status = status
+            task.save()
+
         return task
 
     def update(self, instance, validated_data):
@@ -40,8 +54,3 @@ class TaskSerializer(serializers.ModelSerializer):
             instance.save()
 
         return instance
-
-    class Meta:
-        model = Task
-        fields = '__all__'
-        read_only_fields = ('author',)
