@@ -5,11 +5,15 @@ from django.db import models
 class Status(models.Model):
     name = models.CharField(max_length=200)
 
+    @classmethod
+    def get_default_value(cls):
+        return cls.objects.get(name='New')
+
 
 class Task(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    status = models.ForeignKey(Status, on_delete=models.CASCADE)
+    status = models.ForeignKey(Status, on_delete=models.CASCADE, default=Status.get_default_value)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     assignee = models.ManyToManyField(User, through='TaskAssignee', related_name='assigned_tasks', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
