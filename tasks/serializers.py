@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from tasks.models import Task, TaskAssignee
+from tasks.models import Task, TaskAssignee, Status
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    status = serializers.CharField(required=False)
     assignee = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
 
     def create(self, validated_data):
@@ -29,6 +30,17 @@ class TaskSerializer(serializers.ModelSerializer):
             TaskAssignee.objects.create(user=user, task=task)
         return task
 
+    def update(self, instance, validated_data):
+        status_data = validated_data.pop('status', None)
+        instance = super().update(instance, validated_data)
+
+        if status_data:
+            status = Status.objects.get(name=status_data)
+            instance.status = status
+            instance.save()
+
+        return instance
+
     class Meta:
         model = Task
-        fields = ('title', 'description', 'assignee')
+        fields = ('title', 'description', 'assignee', 'status')
