@@ -29,17 +29,24 @@ def sign_up(request):
     return JsonResponse({'username': user.username}, status=201)
 
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-def create_task(request):
-    user = request.user
+def create_get_tasks(request):
+    if request.method == 'GET':
+        tasks = Task.objects.all()
 
-    serializer = TaskSerializer(data=request.data)
-    if not serializer.is_valid():
-        return JsonResponse(serializer.errors, status=400)
+        if status_filter := request.GET.get('status'):
+            tasks = tasks.filter(status=Status.objects.get(name=status_filter))
 
-    task = serializer.save(author=user)
-    return JsonResponse({'id': task.id}, status=201)
+        return JsonResponse(TaskSerializer(tasks, many=True).data, safe=False)
+
+    elif request.method == 'POST':
+        serializer = TaskSerializer(data=request.data)
+        if not serializer.is_valid():
+            return JsonResponse(serializer.errors, status=400)
+
+        task = serializer.save(author=request.user)
+        return JsonResponse({'id': task.id}, status=201)
 
 
 @api_view(['PUT', 'DELETE'])

@@ -9,6 +9,9 @@ class Status(models.Model):
     def get_default_value(cls):
         return cls.objects.get(name='New')
 
+    def __str__(self):
+        return self.name
+
 
 class Task(models.Model):
     title = models.CharField(max_length=200)
