@@ -37,3 +37,11 @@ class TaskAssignee(models.Model):
 class TaskImage(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='tasks/images')
+
+
+class TaskComment(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    reply_to_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)

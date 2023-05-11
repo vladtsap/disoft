@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from tasks.models import Task, TaskAssignee, Status, TaskImage
+from tasks.models import Task, TaskAssignee, Status, TaskImage, TaskComment
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -61,3 +61,12 @@ class TaskSerializer(serializers.ModelSerializer):
             instance.save()
 
         return instance
+
+
+class TaskCommentSerializer(serializers.ModelSerializer):
+    text = serializers.CharField()
+
+    class Meta:
+        model = TaskComment
+        fields = '__all__'
+        read_only_fields = ('author', 'task', 'created_at')

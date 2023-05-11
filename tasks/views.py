@@ -2,9 +2,9 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from tasks.models import Task, Status, TaskImage
-from tasks.permissions import HasEditingPermission
-from tasks.serializers import UserSerializer, TaskSerializer
+from tasks.models import Task, Status, TaskImage, TaskComment
+from tasks.permissions import HasEditingPermission, HasCommentingPermission
+from tasks.serializers import UserSerializer, TaskSerializer, TaskCommentSerializer
 
 
 @api_view(['GET'])
@@ -76,3 +76,19 @@ def upload_images(request, task_id: int):
         task.images.create(image=image)
 
     return JsonResponse({'message': 'images uploaded'}, status=200)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated, HasCommentingPermission])
+def create_get_comments(request, task_id: int):
+    task = Task.objects.get(id=task_id)
+
+    if request.method == 'GET':
+        return JsonResponse(TaskCommentSerializer(task.comments, many=True).data, safe=False)
+
+    elif request.method == 'POST':
+        serializer = TaskCommentSerializer(data=request.data)
+        if not serializer.is_valid():
+            return JsonResponse(serializer.errors, status=400)
+        comment = serializer.save(author=request.user, task=task)
+        return JsonResponse({'id': comment.id}, status=201)
