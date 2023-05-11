@@ -16,3 +16,13 @@ def hello(request):
     user = request.user
     return JsonResponse({'message': f'Hello, {user.username}!'})
 
+
+@api_view(['POST'])
+def sign_up(request):
+    serializer = UserSerializer(data=request.data)
+    if not serializer.is_valid():
+        return JsonResponse(serializer.errors, status=400)
+
+    user = serializer.save()
+    return JsonResponse({'username': user.username}, status=201)
+
