@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from tasks.models import Task, Status
+from tasks.models import Task, Status, TaskImage
 from tasks.permissions import HasEditingPermission
 from tasks.serializers import UserSerializer, TaskSerializer
 
@@ -65,3 +65,14 @@ def edit_delete_task(request, task_id: int):
     elif request.method == 'DELETE':
         task.delete()
         return JsonResponse({'message': 'task deleted'}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, HasEditingPermission])
+def upload_images(request, task_id: int):
+    task = Task.objects.get(id=task_id)
+
+    for image in request.FILES.getlist('images'):
+        task.images.create(image=image)
+
+    return JsonResponse({'message': 'images uploaded'}, status=200)

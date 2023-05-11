@@ -32,3 +32,8 @@ class TaskAssignee(models.Model):
 
     class Meta:
         unique_together = ('user', 'task')
+
+
+class TaskImage(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='tasks/images')

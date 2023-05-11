@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from tasks.models import Task, TaskAssignee, Status
+from tasks.models import Task, TaskAssignee, Status, TaskImage
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -19,9 +19,16 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'password')
 
 
+class TaskImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskImage
+        fields = ('image',)
+
+
 class TaskSerializer(serializers.ModelSerializer):
     status = serializers.CharField(required=False)
     assignee = serializers.PrimaryKeyRelatedField(many=True, queryset=User.objects.all(), required=False)
+    images = TaskImageSerializer(many=True, required=False)
 
     class Meta:
         model = Task

@@ -11,4 +11,6 @@ urlpatterns = [
     path('token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
     path('tasks', views.create_get_tasks),
     path('tasks/<int:task_id>', views.edit_delete_task),
+    path('tasks/<int:task_id>/images', views.upload_images),
+
 ]
