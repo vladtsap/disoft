@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "disoft"
+version = "1.0"
+description = "Disoft test task"
+authors = []
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.1"
+psycopg2-binary = "^2.9"
+djangorestframework = "^3.14"
+djangorestframework-simplejwt = "^5.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
